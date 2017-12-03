@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<task id="1">
+    <name>Задача</name>
+    <description>Описание</description>
+    <time>1</time>
+    <contacts>Contacts</contacts>
+</task>
