@@ -1,11 +1,7 @@
 package TaskManager;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.*;
+import javax.xml.bind.annotation.*;
 import java.io.*;
 import java.util.*;
 
@@ -16,50 +12,48 @@ import java.util.*;
 
 @XmlRootElement(name = "journal")
 public class Journal {
-    @XmlElement
-    private List<Task> task;
+    private static final String xmlFile = "journal.xml";
+
+    @XmlElementRef
+    private List<Task> tasks;
 
     Journal() {
-        this.task = new ArrayList<>();
+        this.tasks = new ArrayList<>();
     }
 
     public void add(Task task) {
-        this.task.add(task);
+        this.tasks.add(task);
     }
 
     public void delete(Task task) {
-        this.task.remove(task);
+        this.tasks.remove(task);
     }
 
     public List<Task> getTaskList() {
-        return task;
+        return tasks;
     }
 
     public Task getTask(int index) {
-        Task task = getTaskList().get(index);
-        return task;
+        return getTaskList().get(index);
     }
 
     public int getSize() {
-        int size = this.task.size();
-        return size;
+        return this.tasks.size();
     }
 
-    public void objectToXml(Journal journal, OutputStream os) throws IOException {
+    public static void objectToXml(Journal journal, String file) {
         try {
             JAXBContext context = JAXBContext.newInstance(Journal.class);
             Marshaller marshaller = context.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            marshaller.marshal(journal, os);
-            os.flush();
-            os.close();
+            marshaller.marshal(journal, new File(file));
         }
         catch (JAXBException e) {
             e.printStackTrace();
         }
     }
 
-    public Journal xmlToObject(String file) {
+    public static Journal xmlToObject(String file) {
         try {
             JAXBContext context = JAXBContext.newInstance(Journal.class);
             Unmarshaller unmarshaller = context.createUnmarshaller();
@@ -68,30 +62,25 @@ public class Journal {
         catch (JAXBException e) {
             e.printStackTrace();
         }
-        return null;
+        return new Journal();
     }
 
     public static void main(String[] args) throws IOException {
-        FileOutputStream os = new FileOutputStream("journal.xml");
-        String file = "journal.xml";
 
-        Task task = new Task(1, "1", "1", 1, "1");
-        Task task1 = new Task(2, "2", "2", 2, "2");
-        Task task2 = new Task(3, "3", "3", 3, "3");
+        Task task = new Task();
+        Task task1 = new Task();
+        Task task2 = new Task();
         Journal journal = new Journal();
-        Journal journal1 = new Journal();
         Journal journal2 = new Journal();
         journal.add(task);
         journal.add(task1);
         journal.add(task2);
-        //journal.delete(task);
-        journal.objectToXml(journal, os);
-        System.out.println(journal.getTask(0));
-        System.out.println(journal.getTaskList());
-        System.out.println(journal.getSize());
-        journal2.xmlToObject(file);
+        journal.delete(task2);
+        objectToXml(journal, xmlFile);
         journal2.getSize();
-        //journal2.objectToXml(journal2, os);
-        System.out.println();journal.getTaskList();
+        System.out.println(journal.getTaskList());
+        journal2 = xmlToObject(xmlFile);
+        System.out.println(journal2.getTaskList());
+        System.out.println(journal.getTask(0).toString());
     }
 }

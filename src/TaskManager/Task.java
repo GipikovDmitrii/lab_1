@@ -1,6 +1,7 @@
 package TaskManager;
 
 import javax.xml.bind.annotation.*;
+import java.util.Date;
 
 /**
  *
@@ -9,71 +10,83 @@ import javax.xml.bind.annotation.*;
 
 @XmlRootElement(name = "task")
 @XmlType(propOrder = {"name", "description", "time", "contacts"})
-public class Task implements TaskInterface {
+public class Task {
 
-    private int id;
     private String name;
     private String description;
-    private int time;
+    private Date time;
     private String contacts;
 
     Task() {}
 
-    Task(int id, String name, String description, int time, String contacts) {
-        this.setId(id);
+    Task(String name, String description, Date time, String contacts) {
+
         this.setName(name);
         this.setDescription(description);
         this.setTime(time);
         this.setContacts(contacts);
     }
 
-    @Override
-    @XmlAttribute
-    public int getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    @Override
+    /**
+     * Получение номера задачи
+     */
+    @XmlElement
     public String getName() {
         return name;
     }
 
-    @Override
+    /**
+     * Изменение названия задачи
+     */
     public void setName(String name) {
         this.name = name;
     }
 
-    @Override
+
+    /**
+     * Получение описания задачи
+     * @return
+     */
     public String getDescription() {
         return description;
     }
 
-    @Override
+    /**
+     * Изменение описания задачи
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
-    @Override
-    public int getTime() {
-        return id;
+    /**
+     * Получение времени задачи
+     * @return
+     */
+    @XmlElement
+    public Date getTime() {
+        return time;
     }
 
-    @Override
-    public void setTime(int time) {
+    /**
+     * Изменение времени задачи
+     */
+    public void setTime(Date time) {
         this.time = time;
     }
 
-    @Override
+    /**
+     * Получение контактов
+     * @return
+     */
+
+    @XmlElement
     public String getContacts() {
         return contacts;
     }
 
-    @Override
+    /**
+     * Изменение контактов
+     */
     public void setContacts(String contacts) {
         this.contacts = contacts;
     }
@@ -81,8 +94,7 @@ public class Task implements TaskInterface {
     @Override
     public String toString() {
         return "task{" +
-                "id=" + id +
-                ", name='" + name +'\'' +
+                "name='" + name +'\'' +
                 ", description='" + description + '\'' +
                 ", time=" + time +
                 ", contacts='" + contacts + '\'' +
