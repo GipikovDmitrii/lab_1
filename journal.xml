@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<journal>
+    <task id="1">
+        <name>1</name>
+        <description>1</description>
+        <time>1</time>
+        <contacts>1</contacts>
+    </task>
+    <task id="2">
+        <name>2</name>
+        <description>2</description>
+        <time>2</time>
+        <contacts>2</contacts>
+    </task>
+    <task id="3">
+        <name>3</name>
+        <description>3</description>
+        <time>3</time>
+        <contacts>3</contacts>
+    </task>
+</journal>
