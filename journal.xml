@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <journal>
-    <task/>
-    <task/>
+    <task>
+        <name>df</name>
+        <description>f</description>
+        <time>df</time>
+        <contacts>f</contacts>
+    </task>
+    <task>
+        <name>f</name>
+        <description>f</description>
+        <time>f</time>
+        <contacts>f</contacts>
+    </task>
 </journal>

@@ -3,6 +3,8 @@ package TaskManager;
 import javax.xml.bind.*;
 import javax.xml.bind.annotation.*;
 import java.io.*;
+import java.sql.Time;
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -12,7 +14,6 @@ import java.util.*;
 
 @XmlRootElement(name = "journal")
 public class Journal {
-    private static final String xmlFile = "journal.xml";
 
     @XmlElementRef
     private List<Task> tasks;
@@ -41,7 +42,7 @@ public class Journal {
         return this.tasks.size();
     }
 
-    public static void objectToXml(Journal journal, String file) {
+    public void objectToXml(Journal journal, String file) {
         try {
             JAXBContext context = JAXBContext.newInstance(Journal.class);
             Marshaller marshaller = context.createMarshaller();
@@ -53,7 +54,7 @@ public class Journal {
         }
     }
 
-    public static Journal xmlToObject(String file) {
+    public Journal xmlToObject(String file) {
         try {
             JAXBContext context = JAXBContext.newInstance(Journal.class);
             Unmarshaller unmarshaller = context.createUnmarshaller();
@@ -63,24 +64,5 @@ public class Journal {
             e.printStackTrace();
         }
         return new Journal();
-    }
-
-    public static void main(String[] args) throws IOException {
-
-        Task task = new Task();
-        Task task1 = new Task();
-        Task task2 = new Task();
-        Journal journal = new Journal();
-        Journal journal2 = new Journal();
-        journal.add(task);
-        journal.add(task1);
-        journal.add(task2);
-        journal.delete(task2);
-        objectToXml(journal, xmlFile);
-        journal2.getSize();
-        System.out.println(journal.getTaskList());
-        journal2 = xmlToObject(xmlFile);
-        System.out.println(journal2.getTaskList());
-        System.out.println(journal.getTask(0).toString());
     }
 }

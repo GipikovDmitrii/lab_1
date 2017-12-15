@@ -14,12 +14,12 @@ public class Task {
 
     private String name;
     private String description;
-    private Date time;
+    private String time;
     private String contacts;
 
     Task() {}
 
-    Task(String name, String description, Date time, String contacts) {
+    Task(String name, String description, String time, String contacts) {
 
         this.setName(name);
         this.setDescription(description);
@@ -63,14 +63,14 @@ public class Task {
      * @return
      */
     @XmlElement
-    public Date getTime() {
+    public String getTime() {
         return time;
     }
 
     /**
      * Изменение времени задачи
      */
-    public void setTime(Date time) {
+    public void setTime(String time) {
         this.time = time;
     }
 
@@ -89,15 +89,5 @@ public class Task {
      */
     public void setContacts(String contacts) {
         this.contacts = contacts;
-    }
-
-    @Override
-    public String toString() {
-        return "task{" +
-                "name='" + name +'\'' +
-                ", description='" + description + '\'' +
-                ", time=" + time +
-                ", contacts='" + contacts + '\'' +
-                '}';
     }
 }
