@@ -28,7 +28,7 @@ public class Task {
     }
 
     /**
-     * Получение номера задачи
+     * Получение названия задачи
      */
     @XmlElement
     public String getName() {
@@ -47,6 +47,7 @@ public class Task {
      * Получение описания задачи
      * @return
      */
+    @XmlElement
     public String getDescription() {
         return description;
     }
