@@ -6,4 +6,10 @@
         <time></time>
         <contacts></contacts>
     </task>
+    <task>
+        <name></name>
+        <description></description>
+        <time></time>
+        <contacts></contacts>
+    </task>
 </journal>

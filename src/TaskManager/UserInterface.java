@@ -1,9 +1,14 @@
 package TaskManager;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.EventListener;
 
 public class UserInterface extends JFrame {
     Journal journal = new Journal();
@@ -58,13 +63,12 @@ public class UserInterface extends JFrame {
 
     //Обновление списка задач
     public void listUpdate() {
-
-    }
-
-    //Выбор задачи из списка
-    public void selectTaskToList() {
-
-
+        model.clear();
+        for (int i = 0; i < journal.getSize(); i++) {
+            Task task = journal.getTask(i);
+            model.addElement(task);
+        }
+        taskList.setModel(model);
     }
 
     private void createAndShowGUI() {
@@ -89,7 +93,16 @@ public class UserInterface extends JFrame {
         deleteAllTaskButton = new JButton();
         deleteTaskButton = new JButton();
 
-        //taskList.getSelectionModel().addListSelectionListener();
+        taskList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    Task task = taskList.getSelectedValue();
+                    descriptionEditorPane.setText(task.getDescription());
+                    contactsEditorPane.setText(task.getContacts());
+                }
+            }
+        });
 
         taskListScrollPane.setViewportView(taskList);
 
@@ -152,14 +165,25 @@ public class UserInterface extends JFrame {
                 new AddTaskWindow().setVisible(true);
             }
         });
+
         deleteTaskButton.setText(deleteTask);
         deleteTaskButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+
             }
         });
 
         deleteAllTaskButton.setText(deleteAllTask);
+        deleteAllTaskButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                journal = new Journal();
+                model.clear();
+                taskList.setModel(model);
+                //listUpdate();
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -253,7 +277,7 @@ public class UserInterface extends JFrame {
                 String date = enterDateField.getText();
                 String contacts = enterContactsField.getText();
                 addNewTask(name, description, date, contacts);
-                listUpdate();
+                //listUpdate();
                 dispose();
             });
 
