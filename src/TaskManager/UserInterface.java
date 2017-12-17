@@ -4,14 +4,13 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import java.io.File;
 import java.util.EventListener;
 
 public class UserInterface extends JFrame {
     Journal journal = new Journal();
+
     private JButton addTaskButton;
     private JEditorPane contactsEditorPane;
     private JLabel contactsLabel;
@@ -25,7 +24,7 @@ public class UserInterface extends JFrame {
     private JLabel taskListLabel;
     private JPanel taskListPanel;
     private JScrollPane taskListScrollPane;
-    private DefaultListModel<Task> model = new DefaultListModel();
+    private DefaultListModel model = new DefaultListModel();
 
     private static final String titleName = "Планировщик задач";
     private static final String addTask = "Добавить задачу";
@@ -50,17 +49,10 @@ public class UserInterface extends JFrame {
     public void addNewTask(String name, String description, String date, String contacts) {
         Task task = new Task(name, description, date, contacts);
         journal.xmlToObject(xmlFileName);
-        journal.add(task);
+        journal.addTask(task);
         journalToXml(journal);
     }
-
-    //Удаление задачи
-    public void deleteTask(Task task) {
-        journal = xmlToJournal(journal);
-        journal.delete(task);
-        journalToXml(journal);
-    }
-
+    
     //Обновление списка задач
     public void listUpdate() {
         model.clear();
@@ -97,12 +89,20 @@ public class UserInterface extends JFrame {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
-                    Task task = taskList.getSelectedValue();
-                    descriptionEditorPane.setText(task.getDescription());
-                    contactsEditorPane.setText(task.getContacts());
+                    if (taskList.getSelectedValue() != null) {
+                        Task task = taskList.getSelectedValue();
+                        descriptionEditorPane.setText(task.getDescription());
+                        contactsEditorPane.setText(task.getContacts());
+                        deleteTaskButton.setEnabled(true);
+                    } else {
+                        deleteTaskButton.setEnabled(false);
+                        descriptionEditorPane.setText("");
+                        contactsEditorPane.setText("");
+                    }
                 }
             }
         });
+
 
         taskListScrollPane.setViewportView(taskList);
 
@@ -167,21 +167,44 @@ public class UserInterface extends JFrame {
         });
 
         deleteTaskButton.setText(deleteTask);
-        deleteTaskButton.addMouseListener(new MouseAdapter() {
+        deleteTaskButton.setEnabled(false);
+        deleteTaskButton.addActionListener(new ActionListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-
+            public void actionPerformed(ActionEvent e) {
+                int index = taskList.getSelectedIndex();
+                Task task = journal.getTask(index);
+                journal.deleteTask(task);
+                model.removeElementAt(index);
+                if (journal.getSize() == 0) {
+                    deleteAllTaskButton.setEnabled(false);
+                }
             }
         });
 
         deleteAllTaskButton.setText(deleteAllTask);
+        deleteAllTaskButton.setEnabled(false);
         deleteAllTaskButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                journal = new Journal();
-                model.clear();
-                taskList.setModel(model);
-                //listUpdate();
+                if (journal.getSize() != 0) {
+                    journal = new Journal();
+                    model.clear();
+                    taskList.setModel(model);
+                    listUpdate();
+                    deleteAllTaskButton.setEnabled(false);
+                }
+            }
+        });
+
+        deleteAllTaskButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (journal.getSize() != 0) {
+                    deleteAllTaskButton.setEnabled(true);
+                }
+                else {
+                    deleteAllTaskButton.setEnabled(false);
+                }
             }
         });
 
@@ -258,7 +281,7 @@ public class UserInterface extends JFrame {
             enterContactsField = new JEditorPane();
             saveButton = new JButton();
 
-            enterDateLabel.setText("Введите дату и время в формате...");
+            enterDateLabel.setText("Введите дату и время в формате: дд.мм.гггг чч:мм");
 
             enterNameLabel.setText("Введите название задачи:");
 
@@ -271,14 +294,18 @@ public class UserInterface extends JFrame {
             contactsScrollPane.setViewportView(enterContactsField);
 
             saveButton.setText(saveButtonText);
-            saveButton.addActionListener(evt -> {
-                String name = enterNameField.getText();
-                String description = enterDescriptionField.getText();
-                String date = enterDateField.getText();
-                String contacts = enterContactsField.getText();
-                addNewTask(name, description, date, contacts);
-                //listUpdate();
-                dispose();
+            saveButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    String name = enterNameField.getText();
+                    String description = enterDescriptionField.getText();
+                    String date = enterDateField.getText();
+                    String contacts = enterContactsField.getText();
+                    addNewTask(name, description, date, contacts);
+                    deleteAllTaskButton.setEnabled(true);
+                    listUpdate();
+                    dispose();
+                }
             });
 
             javax.swing.GroupLayout jPanelLayout = new javax.swing.GroupLayout(jPanel);

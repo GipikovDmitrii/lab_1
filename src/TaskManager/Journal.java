@@ -22,11 +22,11 @@ public class Journal {
         this.tasks = new ArrayList<>();
     }
 
-    public void add(Task task) {
+    public void addTask(Task task) {
         this.tasks.add(task);
     }
 
-    public void delete(Task task) {
+    public void deleteTask(Task task) {
         this.tasks.remove(task);
     }
 

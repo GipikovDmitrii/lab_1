@@ -91,4 +91,9 @@ public class Task {
     public void setContacts(String contacts) {
         this.contacts = contacts;
     }
+
+    @Override
+    public String toString() {
+        return time + " | " + name;
+    }
 }
