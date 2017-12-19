@@ -1,6 +1,10 @@
 package TaskManager;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -14,12 +18,12 @@ public class Task {
 
     private String name;
     private String description;
-    private String time;
+    private Date time;
     private String contacts;
 
     Task() {}
 
-    Task(String name, String description, String time, String contacts) {
+    Task(String name, String description, Date time, String contacts) {
 
         this.setName(name);
         this.setDescription(description);
@@ -42,7 +46,6 @@ public class Task {
         this.name = name;
     }
 
-
     /**
      * Получение описания задачи
      * @return
@@ -64,14 +67,14 @@ public class Task {
      * @return
      */
     @XmlElement
-    public String getTime() {
+    public Date getTime() {
         return time;
     }
 
     /**
      * Изменение времени задачи
      */
-    public void setTime(String time) {
+    public void setTime(Date time) {
         this.time = time;
     }
 
@@ -94,6 +97,12 @@ public class Task {
 
     @Override
     public String toString() {
-        return time + " | " + name;
+        StringBuilder sb = new StringBuilder();
+        DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+        String date = df.format(getTime());
+        sb.append(date);
+        sb.append(" | ");
+        sb.append(getName());
+        return sb.toString();
     }
 }
