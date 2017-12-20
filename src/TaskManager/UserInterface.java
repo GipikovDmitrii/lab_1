@@ -1,12 +1,17 @@
 package TaskManager;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.File;
-import java.util.EventListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UserInterface extends JFrame {
     Journal journal = new Journal();
@@ -46,13 +51,13 @@ public class UserInterface extends JFrame {
     }
 
     //Добавление новой задачи
-    public void addNewTask(String name, String description, String date, String contacts) {
+    public void addNewTask(String name, String description, Date date, String contacts) {
         Task task = new Task(name, description, date, contacts);
         journal.xmlToObject(xmlFileName);
         journal.addTask(task);
         journalToXml(journal);
     }
-    
+
     //Обновление списка задач
     public void listUpdate() {
         model.clear();
@@ -85,24 +90,20 @@ public class UserInterface extends JFrame {
         deleteAllTaskButton = new JButton();
         deleteTaskButton = new JButton();
 
-        taskList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    if (taskList.getSelectedValue() != null) {
-                        Task task = taskList.getSelectedValue();
-                        descriptionEditorPane.setText(task.getDescription());
-                        contactsEditorPane.setText(task.getContacts());
-                        deleteTaskButton.setEnabled(true);
-                    } else {
-                        deleteTaskButton.setEnabled(false);
-                        descriptionEditorPane.setText("");
-                        contactsEditorPane.setText("");
-                    }
+        taskList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                if (taskList.getSelectedValue() != null) {
+                    Task task = taskList.getSelectedValue();
+                    descriptionEditorPane.setText(task.getDescription());
+                    contactsEditorPane.setText(task.getContacts());
+                    deleteTaskButton.setEnabled(true);
+                } else {
+                    deleteTaskButton.setEnabled(false);
+                    descriptionEditorPane.setText("");
+                    contactsEditorPane.setText("");
                 }
             }
         });
-
 
         taskListScrollPane.setViewportView(taskList);
 
@@ -168,16 +169,13 @@ public class UserInterface extends JFrame {
 
         deleteTaskButton.setText(deleteTask);
         deleteTaskButton.setEnabled(false);
-        deleteTaskButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int index = taskList.getSelectedIndex();
-                Task task = journal.getTask(index);
-                journal.deleteTask(task);
-                model.removeElementAt(index);
-                if (journal.getSize() == 0) {
-                    deleteAllTaskButton.setEnabled(false);
-                }
+        deleteTaskButton.addActionListener(e -> {
+            int index = taskList.getSelectedIndex();
+            Task task = journal.getTask(index);
+            journal.deleteTask(task);
+            model.removeElementAt(index);
+            if (journal.getSize() == 0) {
+                deleteAllTaskButton.setEnabled(false);
             }
         });
 
@@ -191,18 +189,6 @@ public class UserInterface extends JFrame {
                     model.clear();
                     taskList.setModel(model);
                     listUpdate();
-                    deleteAllTaskButton.setEnabled(false);
-                }
-            }
-        });
-
-        deleteAllTaskButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (journal.getSize() != 0) {
-                    deleteAllTaskButton.setEnabled(true);
-                }
-                else {
                     deleteAllTaskButton.setEnabled(false);
                 }
             }
@@ -254,8 +240,13 @@ public class UserInterface extends JFrame {
         private JLabel enterNameLabel;
         private JPanel jPanel;
         private JButton saveButton;
+        private JLabel validationLabel;
+        private JLabel dateLabel;
+        private JLabel timeLabel;
+        private JTextField enterTimeField;
         private final String titleName = "Создание задачи";
         private final String saveButtonText = "Сохранить задачу";
+        private final Pattern DATE = Pattern.compile("((0|1)?[0-9]|2?[0-3]:[0-5][0-9])");
 
         AddTaskWindow() {
             initComponents();
@@ -264,7 +255,7 @@ public class UserInterface extends JFrame {
         private void initComponents() {
             Toolkit toolkit = Toolkit.getDefaultToolkit();
             Dimension dimension = toolkit.getScreenSize();
-            setBounds(dimension.width/2 - 300, dimension.height/2 - 280, 600, 560);
+            setBounds(dimension.width / 2 - 300, dimension.height / 2 - 280, 600, 560);
             Image image = Toolkit.getDefaultToolkit().getImage(pathIcon);
             setIconImage(image);
             setTitle(titleName);
@@ -280,8 +271,12 @@ public class UserInterface extends JFrame {
             contactsScrollPane = new JScrollPane();
             enterContactsField = new JEditorPane();
             saveButton = new JButton();
+            validationLabel = new JLabel();
+            dateLabel = new JLabel();
+            timeLabel = new JLabel();
+            enterTimeField = new JTextField();
 
-            enterDateLabel.setText("Введите дату и время в формате: дд.мм.гггг чч:мм");
+            enterDateLabel.setText("Введите дату и время в указанном формате:");
 
             enterNameLabel.setText("Введите название задачи:");
 
@@ -293,14 +288,44 @@ public class UserInterface extends JFrame {
 
             contactsScrollPane.setViewportView(enterContactsField);
 
+            dateLabel.setText("Дата: dd.mm.yyyy");
+            timeLabel.setText("Время: hh:mm");
+
+            validationLabel.setText(" ");
+            validationLabel.setFont(new Font("Dialog", 1, 11));
+            validationLabel.setForeground(Color.RED);
             saveButton.setText(saveButtonText);
-            saveButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
+            saveButton.addActionListener(evt -> {
+                String textInDateField = enterDateField.getText();
+                String textInNameField = enterNameField.getText();
+                String textInTimeField = enterTimeField.getText();
+                Matcher matcher = DATE.matcher(textInTimeField);
+                DateValidator dv = new DateValidator();
+
+                if (Objects.equals(textInDateField, "") && Objects.equals(textInTimeField, "")) {
+                    validationLabel.setText("Введите дату и время задачи!");
+                } else if (Objects.equals(textInDateField, "")) {
+                    validationLabel.setText("Введите дату!");
+                } else if (!(dv.validate(textInDateField))) {
+                    validationLabel.setText("Введите корректную дату в указанном формате! Например: 18.03.2018");
+                } else if (Objects.equals(textInTimeField, "")) {
+                    validationLabel.setText("Введите время!");
+                } else if (!(matcher.matches())) {
+                    validationLabel.setText("Введите корректное время в указанном формате! Например: 20:18");
+                } else if (Objects.equals(textInNameField, "")) {
+                    validationLabel.setText("Введите название задачи!");
+                } else {
                     String name = enterNameField.getText();
                     String description = enterDescriptionField.getText();
-                    String date = enterDateField.getText();
+                    String dateString = enterDateField.getText().concat(" ").concat(enterTimeField.getText());
                     String contacts = enterContactsField.getText();
+                    DateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+                    Date date = null;
+                    try {
+                        date = format.parse(dateString);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
                     addNewTask(name, description, date, contacts);
                     deleteAllTaskButton.setEnabled(true);
                     listUpdate();
@@ -315,16 +340,34 @@ public class UserInterface extends JFrame {
                             .addGroup(jPanelLayout.createSequentialGroup()
                                     .addContainerGap()
                                     .addGroup(jPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(contactsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
-                                            .addComponent(descriptionScrollPane)
-                                            .addComponent(enterNameField)
-                                            .addComponent(enterDateField)
-                                            .addComponent(enterDateLabel)
-                                            .addComponent(enterNameLabel)
-                                            .addComponent(enterDescriptionLabel)
-                                            .addComponent(enterContactsLabel)
-                                            .addComponent(saveButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addContainerGap())
+                                            .addGroup(jPanelLayout.createSequentialGroup()
+                                                    .addGroup(jPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                            .addComponent(enterDateLabel)
+                                                            .addGroup(jPanelLayout.createSequentialGroup()
+                                                                    .addComponent(dateLabel)
+                                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                    .addComponent(enterDateField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                    .addGap(16, 16, 16)
+                                                                    .addComponent(timeLabel)
+                                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                    .addComponent(enterTimeField, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                    .addGap(0, 171, Short.MAX_VALUE))
+                                            .addGroup(jPanelLayout.createSequentialGroup()
+                                                    .addGroup(jPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                            .addComponent(enterDescriptionLabel)
+                                                            .addComponent(enterContactsLabel)
+                                                            .addGroup(jPanelLayout.createSequentialGroup()
+                                                                    .addComponent(enterNameLabel)
+                                                                    .addGap(59, 59, 59)))
+                                                    .addGap(144, 144, 144))
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelLayout.createSequentialGroup()
+                                                    .addGroup(jPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                            .addComponent(enterNameField)
+                                                            .addComponent(descriptionScrollPane)
+                                                            .addComponent(contactsScrollPane)
+                                                            .addComponent(saveButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                            .addComponent(validationLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                    .addContainerGap())))
             );
             jPanelLayout.setVerticalGroup(
                     jPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -332,8 +375,12 @@ public class UserInterface extends JFrame {
                                     .addContainerGap()
                                     .addComponent(enterDateLabel)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(enterDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addGroup(jPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                            .addComponent(enterDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(dateLabel)
+                                            .addComponent(timeLabel)
+                                            .addComponent(enterTimeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addComponent(enterNameLabel)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addComponent(enterNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -345,9 +392,11 @@ public class UserInterface extends JFrame {
                                     .addComponent(enterContactsLabel)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addComponent(contactsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(validationLabel)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(saveButton)
-                                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addContainerGap())
             );
 
             javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -360,7 +409,48 @@ public class UserInterface extends JFrame {
                     layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             );
+
             pack();
+        }
+    }
+
+    public class DateValidator {
+        private static final String DATE_PATTERN = "(0?[1-9]|[12][0-9]|3[01])\\.(0?[1-9]|1[012])\\.((20)\\d\\d)";
+        private final Pattern pattern;
+        private Matcher matcher;
+
+        public DateValidator() {
+            pattern = Pattern.compile(DATE_PATTERN);
+        }
+
+        public boolean validate(String date) {
+            matcher = pattern.matcher(date);
+            if (matcher.matches()) {
+                matcher.reset();
+                if (matcher.find()) {
+                    String day = matcher.group(1);
+                    String month = matcher.group(2);
+                    int year = Integer.parseInt(matcher.group(3));
+                    if ("31".equals(day)) {
+                        return Arrays.asList(new String[] {"1", "01", "3", "03", "5", "05", "7", "07", "8", "08", "10", "12"}).contains(month);
+                    } else if ("2".equals(month) || "02".equals(month)) {
+                        if (year % 4 == 0) {
+                            if (year % 100 == 0) {
+                                if (year % 400 == 0) {
+                                    return Integer.parseInt(day) <= 29;
+                                }
+                                return Integer.parseInt(day) <= 28;
+                            }
+                            return Integer.parseInt(day) <= 29;
+                        } else {
+                            return Integer.parseInt(day) <= 28;
+                        }
+                    } else {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 
