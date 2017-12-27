@@ -12,8 +12,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Date;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  *
@@ -21,13 +19,12 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 
 public class MainWindow extends JFrame {
-    private static final String titleName = "Планировщик задач";
-    private static final String addTask = "Добавить задачу";
-    private static final String deleteTask = "Удалить задачу";
-    private static final String deleteAllTask = "Удалить все задачи";
-    public final String pathIcon = "src/image/icon.png";
-    private static final String xmlFileName = "journal.xml";
-    //NotificationWindow nw = new NotificationWindow();
+    private static final String PATH_ICON = "src/image/icon.png";
+    private static final String XML_FILE_NAME = "journal.xml";
+    private final String titleName = "Планировщик задач";
+    private final String addTask = "Добавить задачу";
+    private final String deleteTask = "Удалить задачу";
+    private final String deleteAllTask = "Удалить все задачи";
     private static Journal journal = new Journal();
     private JButton addTaskButton = new JButton();
     private JEditorPane contactsEditorPane = new JEditorPane();
@@ -43,14 +40,14 @@ public class MainWindow extends JFrame {
     private JPanel taskListPanel = new JPanel();
     private JScrollPane taskListScrollPane = new JScrollPane();
     private static DefaultListModel model = new DefaultListModel();
-    private ScheduledExecutorService pool = Executors.newScheduledThreadPool(journal.getSize());
     private static Reader reader = new Reader();
     private static Writer writer = new Writer();
 
     public MainWindow() {
-        xmlToJournal(xmlFileName);
+        xmlToJournal(XML_FILE_NAME);
         createAndShowGUI();
         listUpdate();
+        updateNotification(journal);
     }
 
     public static void journalToXml(Journal journal, String file) {
@@ -63,14 +60,22 @@ public class MainWindow extends JFrame {
 
     public static void deleteTask(Task task) {
         journal.deleteTask(task);
-        journalToXml(journal, xmlFileName);
+        journalToXml(journal, XML_FILE_NAME);
     }
 
     public static void addNewTask(String name, String description, Date date, String contacts) {
         Task task = new Task(name, description, date, contacts);
-        xmlToJournal(xmlFileName);
+        xmlToJournal(XML_FILE_NAME);
         journal.addTask(task);
-        journalToXml(journal, xmlFileName);
+        journalToXml(journal, XML_FILE_NAME);
+        new NotificationWindow().addNotification(task);
+    }
+
+    public void updateNotification(Journal journal) {
+        for (int i = 0; i < journal.getSize(); i++) {
+            Task task = journal.getTask(i);
+            new NotificationWindow().addNotification(task);
+        }
     }
 
     //Update task list
@@ -90,7 +95,7 @@ public class MainWindow extends JFrame {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Dimension dimension = toolkit.getScreenSize();
-        Image image = Toolkit.getDefaultToolkit().getImage(pathIcon);
+        Image image = Toolkit.getDefaultToolkit().getImage(PATH_ICON);
         setBounds(dimension.width / 2 - 450, dimension.height / 2 - 300, 900, 600);
         setTitle(titleName);
         setIconImage(image);
@@ -105,6 +110,7 @@ public class MainWindow extends JFrame {
         deleteAllTaskButton.setText(deleteAllTask);
         contactsEditorPane.setEditable(false);
         descriptionEditorPane.setEditable(false);
+        setResizable(false);
 
         addWindowListener(new WindowAdapter() {
             @Override

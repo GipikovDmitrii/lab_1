@@ -12,13 +12,12 @@ import java.util.*;
 
 @XmlRootElement(name = "journal")
 public class Journal {
+    @XmlElementRef
+    private List<Task> tasks;
 
     public Journal() {
         this.tasks = new ArrayList<>();
     }
-
-    @XmlElementRef
-    private List<Task> tasks;
 
     public List<Task> getTaskList() {
         return tasks;

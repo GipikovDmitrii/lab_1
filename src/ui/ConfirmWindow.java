@@ -1,6 +1,7 @@
 package ui;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -22,6 +23,9 @@ public class ConfirmWindow extends JDialog {
         hideButton.setText("Свернуть");
         closeButton.setText("Закрыть");
         setTitle("Подтверждение");
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Dimension dimension = toolkit.getScreenSize();
+        setBounds(dimension.width / 2 - 227, dimension.height / 2 - 165, 464, 339);
 
         hideButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -35,6 +39,7 @@ public class ConfirmWindow extends JDialog {
             @Override
             public void mouseClicked(MouseEvent evt) {
                 setVisible(false);
+                //close mainFrame
             }
         });
 
@@ -64,7 +69,6 @@ public class ConfirmWindow extends JDialog {
                                 .addGap(15, 15, 15))
         );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

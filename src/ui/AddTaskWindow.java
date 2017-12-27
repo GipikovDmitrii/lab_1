@@ -31,8 +31,8 @@ public class AddTaskWindow extends JDialog {
     private JTextField enterTimeField = new JTextField();
     private final String titleName = "Создание задачи";
     private final String saveButtonText = "Сохранить задачу";
-    private final Pattern TIME = Pattern.compile("^([0-1]\\d|2[0-3])(:[0-5]\\d)");
-    public final String pathIcon = "src/images/icon.png";
+    private static final Pattern TIME = Pattern.compile("^([0-1]\\d|2[0-3])(:[0-5]\\d)");
+    public static final String PATH_ICON = "src/images/icon.png";
 
     AddTaskWindow() {
         initComponents();
@@ -42,7 +42,7 @@ public class AddTaskWindow extends JDialog {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Dimension dimension = toolkit.getScreenSize();
         setBounds(dimension.width / 2 - 300, dimension.height / 2 - 280, 600, 560);
-        Image image = Toolkit.getDefaultToolkit().getImage(pathIcon);
+        Image image = Toolkit.getDefaultToolkit().getImage(PATH_ICON);
         setIconImage(image);
         setTitle(titleName);
         enterDateLabel.setText("Введите дату и время в указанном формате:");
@@ -57,6 +57,7 @@ public class AddTaskWindow extends JDialog {
         validationLabel.setFont(new Font("Dialog", 1, 11));
         validationLabel.setForeground(Color.RED);
         saveButton.setText(saveButtonText);
+        setResizable(false);
 
         saveButton.addActionListener(evt -> {
             String textInDateField = enterDateField.getText();
