@@ -34,9 +34,11 @@ public class NotificationWindow extends JDialog {
     private Journal journal = new Journal();
     private Reader reader = new Reader();
     private Writer writer = new Writer();
+    private MainWindow mainWindow;
 
     public NotificationWindow() {
         initComponents();
+        this.mainWindow = mainWindow;
     }
 
     public void addNotification(Task task) {

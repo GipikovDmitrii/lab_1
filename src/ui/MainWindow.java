@@ -47,6 +47,7 @@ public class MainWindow extends JFrame {
 
     private Reader reader = new Reader();
     private Writer writer = new Writer();
+    MainWindow mainWindow = MainWindow.this;
 
     public MainWindow() {
         xmlToJournal(XML_FILE_NAME);
@@ -142,7 +143,7 @@ public class MainWindow extends JFrame {
         addTaskButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
-                addTaskWindow.setVisible(true);
+                new AddTaskWindow(mainWindow).setVisible(true);
             }
         });
 

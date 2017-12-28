@@ -35,7 +35,7 @@ public class AddTaskWindow extends JDialog {
     public static final String PATH_ICON = "src/images/icon.png";
     private MainWindow mainWindow;
 
-    AddTaskWindow(MainWindow mainWindow) {
+    public AddTaskWindow(MainWindow mainWindow) {
         initComponents();
         this.mainWindow = mainWindow;
     }
