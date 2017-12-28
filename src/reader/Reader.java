@@ -13,7 +13,7 @@ import java.io.File;
  */
 
 public class Reader {
-    public static Journal loadJournal(String file) {
+    public Journal loadJournal(String file) {
         try {
             JAXBContext context = JAXBContext.newInstance(Journal.class);
             Unmarshaller unmarshaller = context.createUnmarshaller();

@@ -33,9 +33,11 @@ public class AddTaskWindow extends JDialog {
     private final String saveButtonText = "Сохранить задачу";
     private static final Pattern TIME = Pattern.compile("^([0-1]\\d|2[0-3])(:[0-5]\\d)");
     public static final String PATH_ICON = "src/images/icon.png";
+    private MainWindow mainWindow;
 
-    AddTaskWindow() {
+    AddTaskWindow(MainWindow mainWindow) {
         initComponents();
+        this.mainWindow = mainWindow;
     }
 
     private void initComponents() {
@@ -90,10 +92,9 @@ public class AddTaskWindow extends JDialog {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                MainWindow.addNewTask(name, description, date, contacts);
-                MainWindow.deleteAllTaskButton.setEnabled(true);
-                MainWindow.listUpdate();
-                //createNotification(journal.getSize());
+                mainWindow.addNewTask(name, description, date, contacts);
+                mainWindow.deleteAllTaskButton.setEnabled(true);
+                mainWindow.listUpdate();
                 dispose();
             }
         });

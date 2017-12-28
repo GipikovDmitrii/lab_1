@@ -38,4 +38,10 @@ public class Journal {
     public int getSize() {
         return this.tasks.size();
     }
+
+    public void deleteAllTask(Journal journal) {
+        for (int i = 0; i < journal.getSize(); i++) {
+            tasks.remove(i);
+        }
+    }
 }

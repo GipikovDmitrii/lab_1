@@ -18,7 +18,7 @@ import java.util.TimerTask;
  * @author Dmitrii
  */
 
-public class NotificationWindow extends JDialog{
+public class NotificationWindow extends JDialog {
     private static final String PATH_ICON = "src/image/icon.png";
     private static final String XML_FILE_NAME = "journal.xml";
     private JPanel Panel = new JPanel();
@@ -32,8 +32,8 @@ public class NotificationWindow extends JDialog{
     private GroupLayout layout = new GroupLayout(getContentPane());
     private Timer timer = new Timer();
     private Journal journal = new Journal();
-    private static Reader reader = new Reader();
-    private static Writer writer = new Writer();
+    private Reader reader = new Reader();
+    private Writer writer = new Writer();
 
     public NotificationWindow() {
         initComponents();
@@ -45,12 +45,9 @@ public class NotificationWindow extends JDialog{
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    String taskName = task.getName();
-                    String taskDescription = task.getDescription();
-                    String taskContacts = task.getContacts();
-                    nameTask.setText(taskName);
-                    descriptionTask.setText(taskDescription);
-                    contactsTask.setText(taskContacts);
+                    nameTask.setText(task.getName());
+                    descriptionTask.setText(task.getDescription());
+                    contactsTask.setText(task.getContacts());
                     initComponents();
                     setVisible(true);
                 }
@@ -74,13 +71,13 @@ public class NotificationWindow extends JDialog{
         setBounds(dimension.width / 2 - 227, dimension.height / 2 - 165, 464, 339);
         setResizable(false);
 
-        /*completeTask.addMouseListener(new MouseAdapter() {
+        completeTask.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 journal = reader.loadJournal(XML_FILE_NAME);
 
             }
-        });*/
+        });
 
         PanelLayout.setHorizontalGroup(
                 PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

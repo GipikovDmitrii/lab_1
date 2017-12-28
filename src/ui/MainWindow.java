@@ -19,29 +19,34 @@ import java.util.Date;
  */
 
 public class MainWindow extends JFrame {
-    private static final String PATH_ICON = "src/image/icon.png";
-    private static final String XML_FILE_NAME = "journal.xml";
-    private final String titleName = "Планировщик задач";
-    private final String addTask = "Добавить задачу";
-    private final String deleteTask = "Удалить задачу";
-    private final String deleteAllTask = "Удалить все задачи";
-    private static Journal journal = new Journal();
+    protected Journal journal = new Journal();
+    protected JButton deleteAllTaskButton = new JButton();
     private JButton addTaskButton = new JButton();
     private JEditorPane contactsEditorPane = new JEditorPane();
     private JLabel contactsLabel = new JLabel();
     private JScrollPane contactsScrollPane = new JScrollPane();
-    protected static JButton deleteAllTaskButton = new JButton();
     private JButton deleteTaskButton = new JButton();
     private JEditorPane descriptionEditorPane = new JEditorPane();
     private JLabel descriptionLabel = new JLabel();
     private JScrollPane descriptionScrollPane = new JScrollPane();
-    private static JList<Task> taskList = new JList<>();
+    private JList<Task> taskList = new JList<>();
     private JLabel taskListLabel = new JLabel();
     private JPanel taskListPanel = new JPanel();
     private JScrollPane taskListScrollPane = new JScrollPane();
-    private static DefaultListModel model = new DefaultListModel();
-    private static Reader reader = new Reader();
-    private static Writer writer = new Writer();
+    private final String titleName = "Планировщик задач";
+    private final String addTask = "Добавить задачу";
+    private final String deleteTask = "Удалить задачу";
+    private final String deleteAllTask = "Удалить все задачи";
+    public static final String PATH_ICON = "src/image/icon.png";
+    public static final String XML_FILE_NAME = "journal.xml";
+
+    private DefaultListModel model = new DefaultListModel();
+    private AddTaskWindow addTaskWindow = new AddTaskWindow(this);
+    private SystemTrayWindow systemTrayWindow = new SystemTrayWindow(this);
+    private ConfirmWindow confirmWindow = new ConfirmWindow(this);
+
+    private Reader reader = new Reader();
+    private Writer writer = new Writer();
 
     public MainWindow() {
         xmlToJournal(XML_FILE_NAME);
@@ -50,20 +55,20 @@ public class MainWindow extends JFrame {
         updateNotification(journal);
     }
 
-    public static void journalToXml(Journal journal, String file) {
+    public void journalToXml(Journal journal, String file) {
         writer.saveJournal(journal, file);
     }
 
-    public static Journal xmlToJournal(String file) {
+    public Journal xmlToJournal(String file) {
         return journal = reader.loadJournal(file);
     }
 
-    public static void deleteTask(Task task) {
+    public void deleteTask(Task task) {
         journal.deleteTask(task);
         journalToXml(journal, XML_FILE_NAME);
     }
 
-    public static void addNewTask(String name, String description, Date date, String contacts) {
+    public void addNewTask(String name, String description, Date date, String contacts) {
         Task task = new Task(name, description, date, contacts);
         xmlToJournal(XML_FILE_NAME);
         journal.addTask(task);
@@ -79,7 +84,7 @@ public class MainWindow extends JFrame {
     }
 
     //Update task list
-    public static void listUpdate() {
+    public void listUpdate() {
         model.clear();
         for (int i = 0; i < journal.getSize(); i++) {
             Task task = journal.getTask(i);
@@ -115,7 +120,7 @@ public class MainWindow extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                new ConfirmWindow().setVisible(true);
+                confirmWindow.setVisible(true);
             }
         });
 
@@ -137,7 +142,7 @@ public class MainWindow extends JFrame {
         addTaskButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
-                new AddTaskWindow().setVisible(true);
+                addTaskWindow.setVisible(true);
             }
         });
 
@@ -157,13 +162,10 @@ public class MainWindow extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (journal.getSize() != 0) {
-                    for (int i = 0; i < journal.getSize(); i++) {
-                        Task task = journal.getTask(i);
-                        deleteTask(task);
-                    }
-                    deleteAllTaskButton.setEnabled(false);
-                    listUpdate();
+                    journal.deleteAllTask(journal);
                 }
+                deleteAllTaskButton.setEnabled(false);
+                listUpdate();
             }
         });
 
@@ -173,17 +175,17 @@ public class MainWindow extends JFrame {
                 taskListPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(taskListPanelLayout.createSequentialGroup()
                                 .addContainerGap()
-                                .addGroup(taskListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(taskListPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                         .addGroup(taskListPanelLayout.createSequentialGroup()
                                                 .addGap(8, 8, 8)
                                                 .addComponent(taskListLabel)
                                                 .addGap(212, 212, 212)
                                                 .addComponent(descriptionLabel)
-                                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                         .addGroup(taskListPanelLayout.createSequentialGroup()
-                                                .addComponent(taskListScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addGroup(taskListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(taskListScrollPane, GroupLayout.PREFERRED_SIZE, 281, GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                .addGroup(taskListPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                                         .addGroup(taskListPanelLayout.createSequentialGroup()
                                                                 .addGap(6, 6, 6)
                                                                 .addComponent(contactsLabel)
@@ -192,51 +194,128 @@ public class MainWindow extends JFrame {
                                                         .addComponent(descriptionScrollPane)))))
         );
         taskListPanelLayout.setVerticalGroup(
-                taskListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                taskListPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(taskListPanelLayout.createSequentialGroup()
                                 .addGap(4, 4, 4)
-                                .addGroup(taskListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addGroup(taskListPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                         .addComponent(taskListLabel)
                                         .addComponent(descriptionLabel))
                                 .addGap(7, 7, 7)
-                                .addGroup(taskListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(taskListPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                         .addComponent(taskListScrollPane)
                                         .addGroup(taskListPanelLayout.createSequentialGroup()
-                                                .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(descriptionScrollPane, GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                                                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                                                 .addComponent(contactsLabel)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(contactsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)))));
+                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(contactsScrollPane, GroupLayout.PREFERRED_SIZE, 102, GroupLayout.PREFERRED_SIZE)))));
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                         .addGroup(layout.createSequentialGroup()
                                                 .addGap(12, 12, 12)
-                                                .addComponent(addTaskButton, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                .addComponent(deleteTaskButton, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 340, Short.MAX_VALUE)
-                                                .addComponent(deleteAllTaskButton, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addComponent(taskListPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                .addComponent(addTaskButton, GroupLayout.PREFERRED_SIZE, 136, GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(deleteTaskButton, GroupLayout.PREFERRED_SIZE, 132, GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 340, Short.MAX_VALUE)
+                                                .addComponent(deleteAllTaskButton, GroupLayout.PREFERRED_SIZE, 162, GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(taskListPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addContainerGap())
         );
         layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGap(16, 16, 16)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                .addComponent(addTaskButton)
-                                                .addComponent(deleteTaskButton))
-                                        .addComponent(deleteAllTaskButton, javax.swing.GroupLayout.Alignment.TRAILING))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(taskListPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup().addGap(16, 16, 16)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addGroup(GroupLayout.Alignment.TRAILING, layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                                .addComponent(addTaskButton).addComponent(deleteTaskButton))
+                                        .addComponent(deleteAllTaskButton, GroupLayout.Alignment.TRAILING))
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(taskListPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addContainerGap())
         );
         pack();
+    }
+    class ConfirmWindow extends JDialog {
+        private JPanel Panel = new JPanel();
+        private JButton closeButton = new JButton();
+        private JButton hideButton = new JButton();
+        private JLabel selectLabel = new JLabel();
+        private GroupLayout layout = new GroupLayout(getContentPane());
+        private GroupLayout PanelLayout = new GroupLayout(Panel);
+        private MainWindow mainWindow;
+
+        public ConfirmWindow(MainWindow mainWindow) {
+            initComponents();
+            this.mainWindow = mainWindow;
+        }
+
+        private void initComponents() {
+            selectLabel.setText("Закрыть менеджер задач?");
+            hideButton.setText("Свернуть");
+            closeButton.setText("Закрыть");
+            setTitle("Подтверждение");
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            Dimension dimension = toolkit.getScreenSize();
+            setBounds(dimension.width / 2 - 227, dimension.height / 2 - 165, 464, 339);
+
+            hideButton.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent evt) {
+                    mainWindow.setVisible(false);
+                    systemTrayWindow.hide();
+                    setVisible(false);
+                }
+            });
+
+            closeButton.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent evt) {
+                    mainWindow.dispose();
+                    System.exit(0);
+                }
+            });
+
+            Panel.setLayout(PanelLayout);
+            PanelLayout.setHorizontalGroup(
+                    PanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(PanelLayout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addComponent(closeButton, GroupLayout.PREFERRED_SIZE, 130, GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
+                                    .addComponent(hideButton, GroupLayout.PREFERRED_SIZE, 130, GroupLayout.PREFERRED_SIZE)
+                                    .addContainerGap())
+                            .addGroup(GroupLayout.Alignment.TRAILING, PanelLayout.createSequentialGroup()
+                                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(selectLabel, GroupLayout.PREFERRED_SIZE, 171, GroupLayout.PREFERRED_SIZE)
+                                    .addGap(40, 40, 40))
+            );
+            PanelLayout.setVerticalGroup(
+                    PanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(PanelLayout.createSequentialGroup()
+                                    .addContainerGap(12, Short.MAX_VALUE)
+                                    .addComponent(selectLabel, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addGroup(PanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                            .addComponent(hideButton)
+                                            .addComponent(closeButton))
+                                    .addGap(15, 15, 15))
+            );
+
+            getContentPane().setLayout(layout);
+            layout.setHorizontalGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addComponent(Panel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            );
+            layout.setVerticalGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addComponent(Panel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            );
+
+            pack();
+        }
     }
 }
