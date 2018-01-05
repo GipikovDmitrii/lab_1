@@ -1,5 +1,4 @@
 import ui.MainWindow;
-
 import javax.swing.*;
 import java.util.logging.Logger;
 
@@ -13,7 +12,7 @@ public class Main {
         try {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                 if ("Windows".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
